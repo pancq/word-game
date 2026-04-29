@@ -3,6 +3,8 @@
 专为 5-7 岁儿童设计的中英文识字游戏，支持中文汉字和英文单词学习，内含 8 种趣味游戏模式，寓教于乐。
 
 ---
+<img width="1800" height="1456" alt="图片" src="https://github.com/user-attachments/assets/8db40709-26fb-48b1-a8c7-3f042c16cfc2" />
+
 
 ## ✨ 功能特色
 
