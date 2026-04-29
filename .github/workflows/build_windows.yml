@@ -1,4 +1,4 @@
-name: 打包 Windows EXE
+name: 打包 Windows EXE 和 Mac APP
 
 on:
   push:
@@ -6,9 +6,8 @@ on:
   workflow_dispatch:
 
 jobs:
-  build:
+  build-windows:
     runs-on: windows-latest
-
     steps:
       - name: 检出代码
         uses: actions/checkout@v4
@@ -19,16 +18,41 @@ jobs:
           python-version: "3.11"
 
       - name: 安装依赖
-        run: |
-          pip install pygame pyinstaller
+        run: pip install pygame pyinstaller
 
       - name: 打包 EXE
-        run: |
-          pyinstaller --onefile --noconsole --name "儿童识字游戏" word_game.py
+        run: pyinstaller --onefile --noconsole --name "儿童识字游戏" word_game.py
 
-      - name: 上传 EXE 到 Artifacts
+      - name: 上传 EXE
         uses: actions/upload-artifact@v4
         with:
           name: 儿童识字游戏-Windows
           path: dist/儿童识字游戏.exe
+          retention-days: 30
+
+  build-mac:
+    runs-on: macos-latest
+    steps:
+      - name: 检出代码
+        uses: actions/checkout@v4
+
+      - name: 安装 Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: 安装依赖
+        run: pip install pygame pyinstaller
+
+      - name: 打包 Mac APP
+        run: pyinstaller --onedir --windowed --name "儿童识字游戏" word_game.py
+
+      - name: 压缩 APP
+        run: zip -r 儿童识字游戏-Mac.zip "dist/儿童识字游戏.app"
+
+      - name: 上传 APP
+        uses: actions/upload-artifact@v4
+        with:
+          name: 儿童识字游戏-Mac
+          path: 儿童识字游戏-Mac.zip
           retention-days: 30
