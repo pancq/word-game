@@ -5,6 +5,9 @@ on:
     branches: [ main, master ]
   workflow_dispatch:
 
+env:
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
+
 jobs:
   build-windows:
     runs-on: windows-latest
@@ -29,8 +32,8 @@ jobs:
           name: 儿童识字游戏-Windows
           path: dist/儿童识字游戏.exe
 
-  build-mac:
-    runs-on: macos-13  # Intel 芯片，兼容 Intel Mac，Apple Silicon 通过 Rosetta 2 也可运行
+  build-mac-intel:
+    runs-on: macos-13  # Intel 芯片
     steps:
       - name: 检出代码
         uses: actions/checkout@v4
@@ -43,20 +46,46 @@ jobs:
       - name: 安装依赖
         run: pip install pygame pyinstaller
 
-      - name: 打包 Mac APP
+      - name: 打包 Mac APP（Intel）
         run: pyinstaller --onedir --windowed --name "儿童识字游戏" word_game.py
 
       - name: 压缩 APP
-        run: zip -r 儿童识字游戏-Mac.zip "dist/儿童识字游戏.app"
+        run: zip -r 儿童识字游戏-Mac-Intel.zip "dist/儿童识字游戏.app"
 
-      - name: 上传 APP（供 release job 使用）
+      - name: 上传 APP（Intel）
         uses: actions/upload-artifact@v4
         with:
-          name: 儿童识字游戏-Mac
-          path: 儿童识字游戏-Mac.zip
+          name: 儿童识字游戏-Mac-Intel
+          path: 儿童识字游戏-Mac-Intel.zip
+
+  build-mac-arm:
+    runs-on: macos-latest  # Apple Silicon 芯片
+    steps:
+      - name: 检出代码
+        uses: actions/checkout@v4
+
+      - name: 安装 Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: 安装依赖
+        run: pip install pygame pyinstaller
+
+      - name: 打包 Mac APP（Apple Silicon）
+        run: pyinstaller --onedir --windowed --name "儿童识字游戏" word_game.py
+
+      - name: 压缩 APP
+        run: zip -r 儿童识字游戏-Mac-AppleSilicon.zip "dist/儿童识字游戏.app"
+
+      - name: 上传 APP（Apple Silicon）
+        uses: actions/upload-artifact@v4
+        with:
+          name: 儿童识字游戏-Mac-AppleSilicon
+          path: 儿童识字游戏-Mac-AppleSilicon.zip
 
   release:
-    needs: [ build-windows, build-mac ]
+    needs: [ build-windows, build-mac-intel, build-mac-arm ]
     runs-on: ubuntu-latest
     permissions:
       contents: write
@@ -68,10 +97,16 @@ jobs:
           name: 儿童识字游戏-Windows
           path: release/
 
-      - name: 下载 Mac 产物
+      - name: 下载 Mac Intel 产物
         uses: actions/download-artifact@v4
         with:
-          name: 儿童识字游戏-Mac
+          name: 儿童识字游戏-Mac-Intel
+          path: release/
+
+      - name: 下载 Mac Apple Silicon 产物
+        uses: actions/download-artifact@v4
+        with:
+          name: 儿童识字游戏-Mac-AppleSilicon
           path: release/
 
       - name: 生成版本号（当前时间）
@@ -86,7 +121,12 @@ jobs:
           body: |
             ## 下载说明
             - 🪟 **Windows 用户**：下载 `儿童识字游戏.exe`，双击运行
-            - 🍎 **Mac 用户**：下载 `儿童识字游戏-Mac.zip`，解压后将 .app 拖入应用程序文件夹，双击运行
+            - 🍎 **Mac 用户（Intel 芯片）**：下载 `儿童识字游戏-Mac-Intel.zip`
+            - 🍎 **Mac 用户（Apple Silicon M1/M2/M3/M4）**：下载 `儿童识字游戏-Mac-AppleSilicon.zip`
+
+            解压后将 `.app` 拖入应用程序文件夹，双击运行。
+            > 不确定自己是哪种芯片？点击左上角苹果图标 → 关于本机，查看「芯片」或「处理器」字段。
           files: |
             release/儿童识字游戏.exe
-            release/儿童识字游戏-Mac.zip
+            release/儿童识字游戏-Mac-Intel.zip
+            release/儿童识字游戏-Mac-AppleSilicon.zip
