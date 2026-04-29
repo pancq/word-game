@@ -23,12 +23,11 @@ jobs:
       - name: 打包 EXE
         run: pyinstaller --onefile --noconsole --name "儿童识字游戏" word_game.py
 
-      - name: 上传 EXE
+      - name: 上传 EXE（供 release job 使用）
         uses: actions/upload-artifact@v4
         with:
           name: 儿童识字游戏-Windows
           path: dist/儿童识字游戏.exe
-          retention-days: 30
 
   build-mac:
     runs-on: macos-latest
@@ -50,9 +49,44 @@ jobs:
       - name: 压缩 APP
         run: zip -r 儿童识字游戏-Mac.zip "dist/儿童识字游戏.app"
 
-      - name: 上传 APP
+      - name: 上传 APP（供 release job 使用）
         uses: actions/upload-artifact@v4
         with:
           name: 儿童识字游戏-Mac
           path: 儿童识字游戏-Mac.zip
-          retention-days: 30
+
+  release:
+    needs: [ build-windows, build-mac ]
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+
+    steps:
+      - name: 下载 Windows 产物
+        uses: actions/download-artifact@v4
+        with:
+          name: 儿童识字游戏-Windows
+          path: release/
+
+      - name: 下载 Mac 产物
+        uses: actions/download-artifact@v4
+        with:
+          name: 儿童识字游戏-Mac
+          path: release/
+
+      - name: 生成版本号（当前时间）
+        id: version
+        run: echo "tag=v$(date +'%Y%m%d-%H%M%S')" >> $GITHUB_OUTPUT
+
+      - name: 发布到 GitHub Releases
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: ${{ steps.version.outputs.tag }}
+          name: "儿童识字游戏 ${{ steps.version.outputs.tag }}"
+          body: |
+            ## 下载说明
+            - 🪟 **Windows 用户**：下载 `儿童识字游戏.exe`，双击运行
+            - 🍎 **Mac 用户**：下载 `儿童识字游戏-Mac.zip`，解压后将 .app 拖入应用程序文件夹，双击运行
+          files: |
+            release/儿童识字游戏.exe
+            release/儿童识字游戏-Mac.zip
