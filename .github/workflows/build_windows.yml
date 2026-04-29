@@ -30,7 +30,7 @@ jobs:
           path: dist/儿童识字游戏.exe
 
   build-mac:
-    runs-on: macos-latest
+    runs-on: macos-13  # Intel 芯片，兼容 Intel Mac，Apple Silicon 通过 Rosetta 2 也可运行
     steps:
       - name: 检出代码
         uses: actions/checkout@v4
