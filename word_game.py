@@ -1459,11 +1459,17 @@ class WordGame:
                     # 听解释按钮
                     elif btn2_x <= x <= btn2_x + btn_width and btn_y <= y <= btn_y + btn_height:
                         if self.language == "中文":
-                            explanation = f"{word_data['word']}，读音是 {word_data['pinyin']}，意思是 {word_data['meaning']}"
+                            if platform.system() == "Windows":
+                                # Windows TTS 不支持拼音，改为重复朗读汉字让孩子记住发音
+                                explanation = f"{word_data['word']}，{word_data['word']}，意思是 {word_data['meaning']}"
+                            else:
+                                explanation = f"{word_data['word']}，读音是 {word_data['pinyin']}，意思是 {word_data['meaning']}"
                             self.speak_word(explanation, rate=180, wait=True, force_chinese=False)
                         else:
-                            # 英文模式：用中文朗读解释
-                            explanation = f"{word_data['word']}，读音是 {word_data['pinyin']}，意思是 {word_data['meaning']}"
+                            if platform.system() == "Windows":
+                                explanation = f"{word_data['word']}，{word_data['word']}，意思是 {word_data['meaning']}"
+                            else:
+                                explanation = f"{word_data['word']}，读音是 {word_data['pinyin']}，意思是 {word_data['meaning']}"
                             self.speak_word(explanation, rate=180, wait=True, force_chinese=True)
                     
                     # 关闭按钮
