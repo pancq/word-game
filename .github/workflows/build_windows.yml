@@ -3,6 +3,9 @@ name: 打包 Windows EXE 和 Mac APP
 on:
   push:
     branches: [ main, master ]
+    paths-ignore:
+      - 'README.md'
+      - '**.md'
   workflow_dispatch:
 
 env:
