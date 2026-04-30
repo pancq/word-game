@@ -450,18 +450,23 @@ class WordGame:
                 else:
                     subprocess.Popen(cmd, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
             elif system == "Windows":
-                # Windows 使用 PowerShell SAPI
+                # Windows 使用 PowerShell SAPI，隐藏控制台窗口
                 ps_script = (
                     f"Add-Type -AssemblyName System.Speech; "
                     f"$s = New-Object System.Speech.Synthesis.SpeechSynthesizer; "
                     f"$s.Rate = {max(-10, min(10, (rate - 200) // 20))}; "
                     f"$s.Speak('{word}')"
                 )
-                cmd = ["powershell", "-Command", ps_script]
+                cmd = ["powershell", "-WindowStyle", "Hidden", "-Command", ps_script]
+                si = subprocess.STARTUPINFO()
+                si.dwFlags |= subprocess.STARTF_USESHOWWINDOW
+                si.wShowWindow = 0  # SW_HIDE
                 if wait:
-                    subprocess.run(cmd, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+                    subprocess.run(cmd, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL,
+                                   startupinfo=si)
                 else:
-                    subprocess.Popen(cmd, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+                    subprocess.Popen(cmd, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL,
+                                     startupinfo=si)
             elif system == "Linux":
                 # Linux 使用 espeak（需安装）
                 cmd = ["espeak", "-s", str(rate), word]
